@@ -15,7 +15,10 @@ const app = express();
 
 // ✅ Updated CORS to allow frontend access
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: [
+    'http://localhost:3000',
+    'https://nice-glacier-0a0775403.1.azurestaticapps.net'
+  ],
   credentials: true
 }));
 
