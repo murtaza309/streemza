@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Check, X, User, Mail, Lock, Calendar } from 'lucide-react';
-import axios from 'axios';
+import api from "../api";
 import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
@@ -53,7 +53,7 @@ const Register = () => {
 
     try {
       setLoading(true);
-const res = await axios.post('http://localhost:5000/api/register', {
+const res = await api.post('/register', {
   firstName: formData.firstName,
   lastName: formData.lastName,
   email: formData.email,
@@ -69,7 +69,7 @@ try {
   if (res?.data?.user) {
     localStorage.setItem('streemzaUser', JSON.stringify(res.data.user));
   } else {
-    const loginRes = await axios.post('http://localhost:5000/api/login', {
+    const loginRes = await api.post('/login', {
       email: formData.email,
       password: formData.password
     });
