@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import axios from 'axios';
+import api from "../api";   // adjust path if needed
 import { motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -43,8 +43,8 @@ const Dashboard = () => {
       setLoading(true);
       try {
         const [videosRes, genresRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/videos'),
-          axios.get('http://localhost:5000/api/genres')
+          api.get('/videos'),
+          api.get('/genres')
         ]);
         setVideos(videosRes.data);
         setFiltered(videosRes.data);
