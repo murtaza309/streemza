@@ -1,0 +1,45 @@
+const express = require('express');   
+const cors = require('cors');
+const mongoose = require('mongoose');
+const path = require('path');
+require('dotenv').config();
+
+const authRoutes = require('./routes/auth');
+const videoRoutes = require('./routes/videos');
+const notificationRoutes = require('./routes/notifications');
+const subscriptionRoutes = require('./routes/subscriptions');
+const userRoutes = require('./routes/users');
+const genreRoutes = require('./routes/genres'); // 👈 Add this
+
+const app = express();
+
+// ✅ Updated CORS to allow frontend access
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
+
+// ✅ Moved middleware above routes
+app.use(express.json());
+
+// Static uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ✅ Route handlers
+app.use('/api', authRoutes);
+app.use('/api/videos', videoRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/subscribe', subscriptionRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/genres', genreRoutes); // 👈 Add this
+
+// MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ MongoDB Atlas Connected'))
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
+app.get('/', (req, res) => {
+  res.send('🎥 Streemza Backend is Live');
+});
+
+module.exports = app;

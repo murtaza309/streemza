@@ -1,0 +1,119 @@
+.streemza-logo {
+  display: flex;
+  align-items: center;
+  font-family: Arial, sans-serif;
+}
+
+.streemza-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20px;
+  box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3);
+  position: relative;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3);
+    transform: scale(1);
+  }
+  to {
+    box-shadow: 0 20px 40px rgba(255, 107, 107, 0.5);
+    transform: scale(1.02);
+  }
+}
+
+.streemza-icon::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 16px solid white;
+  border-top: 11px solid transparent;
+  border-bottom: 11px solid transparent;
+  margin-left: 4px;
+  position: relative;
+  z-index: 2;
+}
+
+.streemza-shockwaves {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90px;
+  height: 90px;
+  pointer-events: none;
+}
+
+.streemza-shockwave {
+  position: absolute;
+  border: 2px solid;
+  border-radius: 50%;
+  animation: pulse-out 2s ease-out infinite;
+}
+
+.streemza-shockwave:nth-child(1) {
+  width: 90px;
+  height: 90px;
+  border-color: rgba(255, 107, 107, 0.4);
+  animation-delay: 0s;
+}
+
+.streemza-shockwave:nth-child(2) {
+  width: 110px;
+  height: 110px;
+  top: -10px;
+  left: -10px;
+  border-color: rgba(255, 107, 107, 0.3);
+  animation-delay: 0.5s;
+}
+
+.streemza-shockwave:nth-child(3) {
+  width: 130px;
+  height: 130px;
+  top: -20px;
+  left: -20px;
+  border-color: rgba(255, 107, 107, 0.2);
+  animation-delay: 1s;
+}
+
+@keyframes pulse-out {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+.streemza-text {
+  font-size: 42px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -2px;
+}
+.streemza-logo {
+  display: flex;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.25));
+}
+    .streemza-logo {
+  display: flex;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  transform: scale(0.85); /* 👈 scales everything down by 15% */
+  transform-origin: left center;
+}
