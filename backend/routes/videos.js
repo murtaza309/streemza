@@ -6,42 +6,28 @@ const mongoose = require('mongoose');
 const Comment = require('../models/Comment');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
-const { BlobServiceClient } = require('@azure/storage-blob');
-
-// Azure Storage setup
-const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
-const AZURE_STORAGE_CONTAINER = process.env.AZURE_STORAGE_CONTAINER || "videos";
-
-const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
-const containerClient = blobServiceClient.getContainerClient(AZURE_STORAGE_CONTAINER);
 
 // POST /api/videos/upload
 router.post('/upload', upload.single('video'), async (req, res) => {
   try {
-    const { title, publisher, genre, ageRating, creatorId } = req.body;
+    const {
+      title,
+      publisher,
+      genre,
+      ageRating,
+      creatorId
+    } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ message: 'No video file uploaded' });
     }
-
-    // Generate a unique blob name
-    const blobName = `${Date.now()}-${req.file.originalname}`;
-    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-
-    // Upload to Azure Blob Storage
-    await blockBlobClient.uploadData(req.file.buffer, {
-      blobHTTPHeaders: { blobContentType: req.file.mimetype }
-    });
-
-    // Azure public URL
-    const videoUrl = blockBlobClient.url;
 
     const video = new Video({
       title,
       publisher,
       genre,
       ageRating,
-      videoUrl,
+      videoUrl: `uploads/${req.file.filename}`,
       creator: new mongoose.Types.ObjectId(creatorId)
     });
 
