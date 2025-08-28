@@ -310,10 +310,10 @@ const Profile = () => {
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300 }}
                   src={
-                    profile.profilePic
-                      ? `${process.env.REACT_APP_API_BASE_URL.replace('/api','')}${profile.profilePic}`
-                      : `https://ui-avatars.com/api/?name=${profile.username}&background=6366f1&color=ffffff&bold=true&size=200`
-                  }
+  profile?.profilePic
+    ? `${process.env.REACT_APP_API_BASE_URL?.replace('/api','') || ''}${profile.profilePic}`
+    : `https://ui-avatars.com/api/?name=${profile.username}&background=6366f1&color=ffffff&bold=true&size=200`
+}
                   alt="avatar"
                   className="relative w-32 h-32 rounded-full object-cover border-4 border-white shadow-2xl"
                 />
