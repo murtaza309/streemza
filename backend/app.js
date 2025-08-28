@@ -10,6 +10,7 @@ const notificationRoutes = require('./routes/notifications');
 const subscriptionRoutes = require('./routes/subscriptions');
 const userRoutes = require('./routes/users');
 const genreRoutes = require('./routes/genres'); // 👈 Add this
+const sentimentRoutes = require('./routes/sentiment'); //
 
 const app = express();
 
@@ -29,12 +30,14 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ✅ Route handlers
+
 app.use('/api', authRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/subscribe', subscriptionRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/genres', genreRoutes); // 👈 Add this
+app.use('/api/sentiment', sentimentRoutes); // 👈 add this
 
 // MongoDB
 mongoose.connect(process.env.MONGO_URI)
