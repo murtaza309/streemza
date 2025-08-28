@@ -41,22 +41,22 @@ const VideoPlayer = () => {
   }, [id]);
 
   const handleComment = async (e) => {
-    e.preventDefault();
-    if (!user) return navigate('/login');
-    if (!text) return;
+  e.preventDefault();
+  if (!user) return navigate('/login');
+  if (!text) return;
 
-    try {
-      await api.post(`/videos/${id}/comments`, {
-        text,
-        userId: user.id,
-      });
-      setText('');
-      const updated = await axios.get(`http://localhost:5000/api/videos/${id}/comments`);
-      setComments(updated.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  try {
+    await api.post(`/videos/${id}/comments`, {
+      text,
+      userId: user.id,
+    });
+    setText('');
+    const updated = await api.get(`/videos/${id}/comments`);
+    setComments(updated.data);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const handleLike = async () => {
     if (!user) return navigate('/login');
