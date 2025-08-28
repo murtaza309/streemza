@@ -1,6 +1,6 @@
 import React, { useState } from 'react'; 
 import { Eye, EyeOff, Mail, Lock, LogIn, Sparkles, Shield, Zap } from 'lucide-react';
-import axios from 'axios';
+import api from "../api";
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -49,7 +49,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/login', form);
+      const res = await api.post('/login', form);
       localStorage.setItem('streemzaUser', JSON.stringify(res.data.user));
       setStatus('✨ Welcome back!');
       setTimeout(() => {

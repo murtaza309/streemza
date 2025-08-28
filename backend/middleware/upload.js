@@ -2,27 +2,16 @@
 const multer = require('multer');
 const path = require('path');
 
-// Set storage engine
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Use separate folder for profile pictures
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, 'uploads/profilePics/');
-    } else {
-      cb(null, 'uploads/'); // videos or other
-    }
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}-${file.originalname}`;
-    cb(null, uniqueName);
-  }
-});
+// Use memory storage (no saving to disk)
+const storage = multer.memoryStorage();
 
 // Allow both image and video files
 const fileFilter = (req, file, cb) => {
   const fileTypes = /jpeg|jpg|png|gif|mp4|mov|avi|mkv/;
   const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
-  if (extName) {
+  const mimeType = file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/');
+  
+  if (extName && mimeType) {
     cb(null, true);
   } else {
     cb(new Error('Only images and video files are allowed'));

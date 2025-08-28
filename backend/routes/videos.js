@@ -1,33 +1,46 @@
 const express = require('express');
 const router = express.Router();
 const Video = require('../models/Video');
-const upload = require('../middleware/upload');
+const upload = require('../middleware/upload'); // multer middleware
 const mongoose = require('mongoose');
 const Comment = require('../models/Comment');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
 
+const { BlobServiceClient } = require('@azure/storage-blob');
+require('dotenv').config();
+
+// ⚡ Setup Azure Blob client
+const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
+const containerClient = blobServiceClient.getContainerClient(process.env.AZURE_STORAGE_CONTAINER);
+
 // POST /api/videos/upload
 router.post('/upload', upload.single('video'), async (req, res) => {
   try {
-    const {
-      title,
-      publisher,
-      genre,
-      ageRating,
-      creatorId
-    } = req.body;
+    const { title, publisher, genre, ageRating, creatorId } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ message: 'No video file uploaded' });
     }
 
+    // 👉 Upload file buffer to Azure Blob
+    const blobName = `${Date.now()}-${req.file.originalname}`;
+    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+    await blockBlobClient.uploadData(req.file.buffer, {
+      blobHTTPHeaders: { blobContentType: req.file.mimetype }
+    });
+
+    // 👉 Public URL for the video
+    const videoUrl = blockBlobClient.url;
+
+    // 👉 Save metadata in MongoDB
     const video = new Video({
       title,
       publisher,
       genre,
       ageRating,
-      videoUrl: `uploads/${req.file.filename}`,
+      videoUrl, // Azure URL instead of local
       creator: new mongoose.Types.ObjectId(creatorId)
     });
 
@@ -39,7 +52,7 @@ router.post('/upload', upload.single('video'), async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error('❌ Upload failed:', err);
     res.status(500).json({ message: 'Upload failed' });
   }
 });

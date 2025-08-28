@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
+import api from "../api";
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Container from '../components/Container';
@@ -16,11 +16,11 @@ const VideoPlayer = () => {
   const user = JSON.parse(localStorage.getItem('streemzaUser'));
 
   const fetchVideo = async () => {
-    const res = await axios.get(`http://localhost:5000/api/videos/${id}`);
+    const res = await api.get(`/videos/${id}`);
     setVideo(res.data);
 
     if (res.data.creator?.username) {
-      const userRes = await axios.get(`http://localhost:5000/api/users/username/${res.data.creator.username}`);
+      const userRes = await api.get(`/users/username/${res.data.creator.username}`);
       setUploader(userRes.data);
     }
   };
@@ -29,9 +29,9 @@ const VideoPlayer = () => {
     const fetchData = async () => {
       try {
         await fetchVideo();
-        const c = await axios.get(`http://localhost:5000/api/videos/${id}/comments`);
+        const c = await api.get(`/videos/${id}/comments`);
         setComments(c.data);
-        const s = await axios.get(`http://localhost:5000/api/videos`);
+        const s = await api.get(`/videos`);
         setSuggested(s.data.filter(v => v._id !== id));
       } catch (err) {
         console.error(err);
@@ -41,39 +41,39 @@ const VideoPlayer = () => {
   }, [id]);
 
   const handleComment = async (e) => {
-    e.preventDefault();
-    if (!user) return navigate('/login');
-    if (!text) return;
+  e.preventDefault();
+  if (!user) return navigate('/login');
+  if (!text) return;
 
-    try {
-      await axios.post(`http://localhost:5000/api/videos/${id}/comments`, {
-        text,
-        userId: user.id,
-      });
-      setText('');
-      const updated = await axios.get(`http://localhost:5000/api/videos/${id}/comments`);
-      setComments(updated.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  try {
+    await api.post(`/videos/${id}/comments`, {
+      text,
+      userId: user.id,
+    });
+    setText('');
+    const updated = await api.get(`/videos/${id}/comments`);
+    setComments(updated.data);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const handleLike = async () => {
     if (!user) return navigate('/login');
-    await axios.post(`http://localhost:5000/api/videos/${id}/like`, { userId: user.id });
+    await api.post(`/videos/${id}/like`, { userId: user.id });
     await fetchVideo();
   };
 
   const handleUnlike = async () => {
     if (!user) return navigate('/login');
-    await axios.post(`http://localhost:5000/api/videos/${id}/unlike`, { userId: user.id });
+    await api.post(`/videos/${id}/unlike`, { userId: user.id });
     await fetchVideo();
   };
 
   const handleTimeUpdate = async (e) => {
     if (!viewTrackedRef.current && e.target.currentTime > 5) {
       try {
-        await axios.put(`http://localhost:5000/api/videos/views/${id}`);
+        await api.put(`/videos/views/${id}`);
         setVideo(prev => ({
           ...prev,
           views: (prev?.views || 0) + 1
@@ -104,11 +104,11 @@ const VideoPlayer = () => {
       const isSubscribed = uploader?.subscribers?.includes(user.id);
 
       if (isSubscribed) {
-        await axios.post(`http://localhost:5000/api/unsubscribe/${uploader._id}`, {
+        await api.post(`/unsubscribe/${uploader._id}`, {
           userId: user.id
         });
       } else {
-        await axios.post(`http://localhost:5000/api/subscribe/${uploader._id}`, {
+        await api.post(`/subscribe/${uploader._id}`,  {
           userId: user.id
         });
       }
@@ -172,7 +172,7 @@ const VideoPlayer = () => {
                   <div className={`relative rounded-3xl overflow-hidden ${glassCardStyle} p-2`}>
                     <video
                       className="w-full aspect-video object-cover rounded-2xl"
-                      src={`http://localhost:5000/${video.videoUrl}`}
+                      src={`${process.env.REACT_APP_API_BASE_URL.replace('/api','')}/${video.videoUrl}`}
                       controls
                       onTimeUpdate={handleTimeUpdate}
                     />
@@ -227,8 +227,8 @@ const VideoPlayer = () => {
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full blur opacity-0 group-hover:opacity-75 transition-opacity duration-300" />
                         <img
                           src={uploader?.profilePic
-                            ? `http://localhost:5000${uploader.profilePic}`
-                            : `https://ui-avatars.com/api/?name=${uploader?.username || 'User'}&background=6366f1&color=ffffff&bold=true`}
+                           ? `${process.env.REACT_APP_API_BASE_URL.replace('/api','')}${uploader.profilePic}`
+                           : `https://ui-avatars.com/api/?name=${uploader?.username || 'User'}&background=6366f1&color=ffffff&bold=true`}
                           alt="Channel"
                           className="relative w-14 h-14 rounded-full object-cover border-2 border-white/50 dark:border-gray-700/50"
                         />
@@ -468,7 +468,7 @@ const VideoPlayer = () => {
                         >
                           <video 
                             className="w-full h-full object-cover" 
-                            src={`http://localhost:5000/${vid.videoUrl}`} 
+                            src={`${process.env.REACT_APP_API_BASE_URL.replace('/api','')}/${vid.videoUrl}`}
                             muted 
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

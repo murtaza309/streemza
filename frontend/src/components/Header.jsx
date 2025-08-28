@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Notifications from './Notifications';
 import StreemzaLogo from './StreemzaLogo';
+import api from "../api";
 
 const Header = () => {
   const [user, setUser] = useState(null);
@@ -41,15 +42,15 @@ const Header = () => {
       if (storedUser) {
         const parsed = JSON.parse(storedUser);
         try {
-          const res = await fetch(`http://localhost:5000/api/users/${parsed.id}`);
-          const data = await res.json();
+          // ✅ use api instead of fetch
+          const res = await api.get(`/users/${parsed.id}`);
+          const data = res.data;
           const username = data.username;
           setUser({ ...data, id: data._id });
 
-          // ✅ Fetch notifications using username
-          const notifRes = await fetch(`http://localhost:5000/api/notifications/${username}`);
-          const notifData = await notifRes.json();
-          setNotifications(notifData);
+          // ✅ Fetch notifications using api
+          const notifRes = await api.get(`/notifications/${username}`);
+          setNotifications(notifRes.data);
         } catch (err) {
           console.error('❌ Failed to fetch user or notifications:', err);
         }
@@ -278,7 +279,7 @@ const Header = () => {
                   <img
                     src={
                       user?.profilePic
-                        ? `http://localhost:5000${user.profilePic}`
+                        ? `${process.env.REACT_APP_API_BASE_URL.replace('/api','')}${user.profilePic}`
                         : `https://ui-avatars.com/api/?name=${user.username}&background=6366f1&color=ffffff&bold=true`
                     }
                     alt="avatar"

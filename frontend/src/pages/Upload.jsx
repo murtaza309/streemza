@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import api from "../api";
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -87,12 +87,12 @@ const Upload = () => {
     }
 
     try {
-      await axios.post('http://localhost:5000/api/videos/upload', data, {
-        onUploadProgress: (progressEvent) => {
-          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(progress);
-        }
-      });
+      await api.post('/videos/upload', data, {
+  onUploadProgress: (progressEvent) => {
+    const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+    setUploadProgress(progress);
+  }
+});
       
       setStatus('✅ Video uploaded successfully!');
       setTimeout(() => {

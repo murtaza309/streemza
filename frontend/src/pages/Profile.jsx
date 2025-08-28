@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from "../api";
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, User, Mail, Lock, Calendar, Camera, MapPin, Globe, Award, Play, Clock, Shield, Settings, Users, Film } from 'lucide-react';
@@ -36,7 +36,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/users/username/${id}`);
+        const res = await api.get(`/users/username/${id}`);
         setProfile(res.data);
         setSubscriberCount(res.data.subscribers?.length || 0);
                   // Default non-creators to About tab
@@ -61,9 +61,9 @@ const Profile = () => {
           confirmPassword: '',
           role: res.data.role || 'consumer'
         });
-        setPreviewImage(res.data.profilePic ? `http://localhost:5000${res.data.profilePic}` : '');
+        setPreviewImage(res.data.profilePic ? `${process.env.REACT_APP_API_BASE_URL}${res.data.profilePic}` : '');
 
-        const videoRes = await axios.get(`http://localhost:5000/api/videos`);
+        const videoRes = await api.get(`/videos`);
         const userVideos = videoRes.data.filter(v => v.creator._id === res.data._id);
         setVideos(userVideos);
       } catch (err) {
@@ -76,9 +76,7 @@ const Profile = () => {
 
   const handleSubscribe = async () => {
     try {
-      await axios.post(`http://localhost:5000/api/subscribe/${id}`, {
-        userId: currentUser.id,
-      });
+      await api.post(`/subscribe/${id}`, { userId: currentUser.id });
       setSubscriberCount(prev => prev + 1);
       setIsSubscribed(true);
     } catch (err) {
@@ -125,9 +123,9 @@ const Profile = () => {
       }
       formData.append('userId', currentUser.id);
 
-      const res = await axios.put(`http://localhost:5000/api/users/${id}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const res = await api.put(`/users/${id}`, formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+});
 
       toast.success('Profile updated successfully');
       
@@ -312,10 +310,10 @@ const Profile = () => {
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300 }}
                   src={
-                    profile.profilePic
-                      ? `http://localhost:5000${profile.profilePic}`
-                      : `https://ui-avatars.com/api/?name=${profile.username}&background=6366f1&color=ffffff&bold=true&size=200`
-                  }
+  profile?.profilePic
+    ? `${process.env.REACT_APP_API_BASE_URL?.replace('/api','') || ''}${profile.profilePic}`
+    : `https://ui-avatars.com/api/?name=${profile.username}&background=6366f1&color=ffffff&bold=true&size=200`
+}
                   alt="avatar"
                   className="relative w-32 h-32 rounded-full object-cover border-4 border-white shadow-2xl"
                 />
@@ -582,7 +580,7 @@ const Profile = () => {
                       {/* Enhanced Video Thumbnail */}
                       <div className="aspect-video bg-gradient-to-br from-slate-900 to-slate-700 overflow-hidden rounded-t-3xl relative">
                         <video
-                          src={`http://localhost:5000/${video.videoUrl}`}
+                          src={`${process.env.REACT_APP_API_BASE_URL}/${video.videoUrl}`}
                           className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110"
                           preload="metadata"
                         />
