@@ -171,11 +171,11 @@ const VideoPlayer = () => {
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-3xl blur-xl transform rotate-1" />
                   <div className={`relative rounded-3xl overflow-hidden ${glassCardStyle} p-2`}>
                     <video
-                      className="w-full aspect-video object-cover rounded-2xl"
-                      src={`${process.env.REACT_APP_API_BASE_URL.replace('/api','')}/${video.videoUrl}`}
-                      controls
-                      onTimeUpdate={handleTimeUpdate}
-                    />
+  className="w-full aspect-video object-cover rounded-2xl"
+  src={video.videoUrl}
+  controls
+  onTimeUpdate={handleTimeUpdate}
+/>
                   </div>
                 </motion.div>
 
@@ -467,10 +467,10 @@ const VideoPlayer = () => {
                           transition={{ duration: 0.2 }}
                         >
                           <video 
-                            className="w-full h-full object-cover" 
-                            src={`${process.env.REACT_APP_API_BASE_URL.replace('/api','')}/${vid.videoUrl}`}
-                            muted 
-                          />
+  className="w-full h-full object-cover" 
+  src={vid.videoUrl}
+  muted 
+/>
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <motion.div 
                             className="absolute bottom-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-xs font-semibold"
