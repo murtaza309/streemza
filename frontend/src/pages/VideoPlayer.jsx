@@ -12,6 +12,7 @@ const VideoPlayer = () => {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState('');
   const [suggested, setSuggested] = useState([]);
+  const [sentimentMap, setSentimentMap] = useState({}); // 👈 sentiment state
   const viewTrackedRef = useRef(false);
   const user = JSON.parse(localStorage.getItem('streemzaUser'));
 
@@ -25,12 +26,36 @@ const VideoPlayer = () => {
     }
   };
 
+  // 👇 helper to analyze sentiments
+  const analyzeSentiments = async (list) => {
+    try {
+      const pending = list.filter(c => !sentimentMap[c._id]);
+      if (pending.length === 0) return;
+
+      const updates = {};
+      await Promise.all(
+        pending.map(async (c) => {
+          try {
+            const r = await api.post('/sentiment', { text: c.text });
+            updates[c._id] = r.data?.sentiment || 'neutral';
+          } catch {
+            updates[c._id] = 'neutral';
+          }
+        })
+      );
+      setSentimentMap(prev => ({ ...prev, ...updates }));
+    } catch (e) {
+      console.error('Sentiment analysis failed:', e);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         await fetchVideo();
         const c = await api.get(`/videos/${id}/comments`);
         setComments(c.data);
+        await analyzeSentiments(c.data); // 👈 run after comments load
         const s = await api.get(`/videos`);
         setSuggested(s.data.filter(v => v._id !== id));
       } catch (err) {
@@ -41,22 +66,23 @@ const VideoPlayer = () => {
   }, [id]);
 
   const handleComment = async (e) => {
-  e.preventDefault();
-  if (!user) return navigate('/login');
-  if (!text) return;
+    e.preventDefault();
+    if (!user) return navigate('/login');
+    if (!text) return;
 
-  try {
-    await api.post(`/videos/${id}/comments`, {
-      text,
-      userId: user.id,
-    });
-    setText('');
-    const updated = await api.get(`/videos/${id}/comments`);
-    setComments(updated.data);
-  } catch (err) {
-    console.error(err);
-  }
-};
+    try {
+      await api.post(`/videos/${id}/comments`, {
+        text,
+        userId: user.id,
+      });
+      setText('');
+      const updated = await api.get(`/videos/${id}/comments`);
+      setComments(updated.data);
+      await analyzeSentiments(updated.data); // 👈 run after new comment
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleLike = async () => {
     if (!user) return navigate('/login');
@@ -171,11 +197,11 @@ const VideoPlayer = () => {
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-3xl blur-xl transform rotate-1" />
                   <div className={`relative rounded-3xl overflow-hidden ${glassCardStyle} p-2`}>
                     <video
-  className="w-full aspect-video object-cover rounded-2xl"
-  src={video.videoUrl}
-  controls
-  onTimeUpdate={handleTimeUpdate}
-/>
+                      className="w-full aspect-video object-cover rounded-2xl"
+                      src={video.videoUrl}
+                      controls
+                      onTimeUpdate={handleTimeUpdate}
+                    />
                   </div>
                 </motion.div>
 
@@ -206,7 +232,7 @@ const VideoPlayer = () => {
                   </motion.div>
                 </motion.div>
 
-                {/* Enhanced Channel & Actions Bar */}
+                {/* Channel & Actions Bar */}
                 <motion.div 
                   className={`${glassCardStyle} rounded-3xl p-6`}
                   variants={itemVariants}
@@ -214,7 +240,6 @@ const VideoPlayer = () => {
                   transition={{ duration: 0.2 }}
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                    {/* Channel Info with Hover Effects */}
                     <Link 
                       to={`/profile/${uploader?.username}`} 
                       className="flex items-center gap-4 group"
@@ -243,9 +268,8 @@ const VideoPlayer = () => {
                       </div>
                     </Link>
 
-                    {/* Animated Action Buttons */}
                     <div className="flex items-center gap-4">
-                      {/* Like/Dislike with Cool Animation */}
+                      {/* Like/Dislike */}
                       <div className="flex items-center bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl overflow-hidden border border-white/30 dark:border-gray-700/30">
                         <motion.button 
                           onClick={handleLike}
@@ -284,13 +308,13 @@ const VideoPlayer = () => {
                             animate={isUnliked ? { scale: [1, 1.2, 1] } : {}}
                             transition={{ duration: 0.3 }}
                           >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v2a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"/>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018c.163 0 .326.02.485.06L17 4m-7 10v2a2 2 0 002 2h.095c.5 0 .905-.405.905-.905 0-.714.211 1.412-.608 2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"/>
                           </motion.svg>
                           {video.unlikes?.length || 0}
                         </motion.button>
                       </div>
 
-                      {/* Share Button with Gradient */}
+                      {/* Share */}
                       <motion.button 
                         onClick={handleShare}
                         className="flex items-center gap-3 px-6 py-3 font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all"
@@ -303,7 +327,7 @@ const VideoPlayer = () => {
                         Share
                       </motion.button>
 
-                      {/* Animated Subscribe Button */}
+                      {/* Subscribe */}
                       {user && uploader && user.id !== uploader._id && (
                         <motion.button 
                           onClick={handleSubscribe}
@@ -324,7 +348,7 @@ const VideoPlayer = () => {
                   </div>
                 </motion.div>
 
-                {/* Enhanced Description */}
+                {/* Description */}
                 <motion.div 
                   className={`${glassCardStyle} rounded-3xl p-8`}
                   variants={itemVariants}
@@ -339,7 +363,7 @@ const VideoPlayer = () => {
                   </p>
                 </motion.div>
 
-                {/* Comments Section with Enhanced Design */}
+                {/* Comments Section */}
                 <motion.div className="space-y-8" variants={itemVariants}>
                   <div className="flex items-center gap-4">
                     <h2 className={`text-2xl font-bold ${gradientText}`}>
@@ -348,7 +372,7 @@ const VideoPlayer = () => {
                     <div className="flex-1 h-px bg-gradient-to-r from-purple-500/30 to-transparent" />
                   </div>
 
-                  {/* Enhanced Comment Input */}
+                  {/* Comment Input */}
                   <motion.div 
                     className={`${glassCardStyle} rounded-3xl p-8`}
                     whileHover={{ y: -2 }}
@@ -403,7 +427,7 @@ const VideoPlayer = () => {
                     </div>
                   </motion.div>
 
-                  {/* Enhanced Comments List */}
+                  {/* Comments List */}
                   <div className="space-y-6">
                     <AnimatePresence>
                       {comments.map((c, index) => (
@@ -426,6 +450,20 @@ const VideoPlayer = () => {
                               <p className="font-bold text-gray-900 dark:text-white">
                                 @{c.user?.username || 'User'}
                               </p>
+
+                              {/* Sentiment badge */}
+                              <span
+                                className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                                  sentimentMap[c._id] === 'positive'
+                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                    : sentimentMap[c._id] === 'negative'
+                                    ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300'
+                                }`}
+                              >
+                                {sentimentMap[c._id] || '...'}
+                              </span>
+
                               <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500" />
                               <span className="text-sm text-gray-500 dark:text-gray-400">
                                 {new Date(c.createdAt).toLocaleDateString()}
@@ -440,7 +478,7 @@ const VideoPlayer = () => {
                 </motion.div>
               </div>
 
-              {/* Enhanced Suggested Videos Sidebar */}
+              {/* Suggested Sidebar */}
               <motion.div 
                 className="w-full xl:w-[420px] space-y-6"
                 variants={itemVariants}
@@ -467,10 +505,10 @@ const VideoPlayer = () => {
                           transition={{ duration: 0.2 }}
                         >
                           <video 
-  className="w-full h-full object-cover" 
-  src={vid.videoUrl}
-  muted 
-/>
+                            className="w-full h-full object-cover" 
+                            src={vid.videoUrl}
+                            muted 
+                          />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                           <motion.div 
                             className="absolute bottom-2 right-2 bg-black/80 text-white px-2 py-1 rounded text-xs font-semibold"
